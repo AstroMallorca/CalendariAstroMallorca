@@ -275,24 +275,27 @@ function setFotoMes(isoYM) {
   const img = document.getElementById("imgFotoMes");
   const titol = document.getElementById("titolFoto");
 
-  // fallback automàtic si el Sheet no té info
+  // Imatge
   const fallbackPath = `assets/months/2026/${isoYM}.png`;
-  const src = (f && f.imatge) ? f.imatge : fallbackPath;
+  img.src = (f && f.imatge) ? f.imatge : fallbackPath;
 
-  img.src = src;
+  // Títol + autor
+  if (f && (f.titol || f.autor)) {
+    if (f.titol && f.autor) {
+      titol.textContent = `${f.titol} — ${f.autor}`;
+    } else {
+      titol.textContent = f.titol || f.autor;
+    }
+  } else {
+    titol.textContent = "";
+  }
 
-  const nom = (f && f.titol) ? f.titol : "";
-  const autor = (f && f.autor) ? f.autor : "";
-  titol.textContent = autor ? `${nom} — ${autor}` : nom;
-
-  img.onclick = (f ? () => obreModalDetallFoto(f) : null);
-
+  // Fallback si la imatge no existeix
   img.onerror = () => {
     img.onerror = null;
     img.src = "assets/months/2026/default.png";
   };
 }
-
 function obreModalDetallFoto(f) {
   contingutDia.innerHTML = `
     <h2>${f.titol || ""}</h2>
