@@ -1,7 +1,7 @@
 // sw.js
 // Offline + actualització automàtica (Sheets CSV + Calendar ICS)
 // IMPORTANT: cada vegada que facis canvis importants, puja la versió (v7 -> v8, etc.)
-const CACHE_NAME = "calendariastromallorca-v2";
+const CACHE_NAME = "calendariastromallorca";
 
 // Fitxers mínims per arrencar OFFLINE (mateix origen)
 const CORE_ASSETS = [
@@ -53,8 +53,7 @@ self.addEventListener("fetch", (event) => {
   const allowedOrigins = new Set([
     self.location.origin,
     "https://docs.google.com",
-    "https://calendar.google.com",
-    "https://r.jina.ai"
+    "https://calendar.google.com"
   ]);
 
   if (!allowedOrigins.has(url.origin)) return;
@@ -81,8 +80,6 @@ function isDynamicData(url) {
   if (url.pathname.endsWith(".csv")) return true;
 
   // Calendar ICS
-  if (url.origin === "https://r.jina.ai" && url.pathname.includes(".ics")) return true;
-
   if (url.origin === "https://calendar.google.com" && url.pathname.endsWith(".ics")) return true;
   if (url.pathname.endsWith(".ics")) return true;
 
