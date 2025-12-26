@@ -456,4 +456,39 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    // Quan el nou SW pren control, recarregam una vegada per aplicar el nou codi/assets
+    window.location.reload();
+  });
+
+  window.addEventListener("load", async () => {
+    try {
+      const reg = await navigator.serviceWorker.register("sw.js");
+
+      // Si hi ha un SW nou esperant, l’activam
+      if (reg.waiting) {
+        reg.waiting.postMessage("SKIP_WAITING");
+      }
+
+      // Quan detecta un update descarregat, l’activam
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "installed") {
+            // Si ja hi havia un SW controlant, vol dir que hi ha update
+            if (navigator.serviceWorker.controller) {
+              newWorker.postMessage("SKIP_WAITING");
+            }
+          }
+        });
+      });
+
+    } catch (e) {
+      console.warn("⚠️ No s'ha pogut registrar el Service Worker", e);
+    }
+  });
+}
 
