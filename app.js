@@ -5,6 +5,9 @@ const SHEET_FOTOS_MES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWf6OL
 const SHEET_EFEMERIDES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWf6OL8LYzMsBPuxvI_h4s9-0__hru3hWK9D2ewyccoku9ndl2VhZ0GS8P9uEigShJEehsy2UktnY2/pub?gid=1305356303&single=true&output=csv";
 const SHEET_CONFIG = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWf6OL8LYzMsBPuxvI_h4s9-0__hru3hWK9D2ewyccoku9ndl2VhZ0GS8P9uEigShJEehsy2UktnY2/pub?gid=1324899531&single=true&output=csv";
 
+// Festius Balears (qualsevol any) — només columna "nom" amb DD-MM-YYYY
+const SHEET_FESTIUS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWf6OL8LYzMsBPuxvI_h4s9-0__hru3hWK9D2ewyccoku9ndl2VhZ0GS8P9uEigShJEehsy2UktnY2/pub?output=csv";
+
 // ICS públic
 const CALENDAR_ICS = "https://calendar.google.com/calendar/ical/astromca%40gmail.com/public/basic.ics";
 
@@ -48,7 +51,6 @@ function renderMes(isoYM){
   actualitzaTitolMes(mesActual);
   dibuixaMes(mesActual);
 }
-
 function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
 
 // === ESTAT DADES ===
@@ -56,6 +58,7 @@ let efemerides = {};           // local data/efemerides_2026.json (per dia ISO)
 let efemeridesEspecials = {};  // del sheet per dia ISO -> array
 let activitats = {};           // del calendari ICS per dia ISO -> array
 let fotosMes = {};             // "MM-YYYY" -> info foto
+let festius = new Set();       // "YYYY-MM-DD" (qualsevol any)
 
 // === Utils dates ===
 function ddmmyyyyToISO(s) {
@@ -233,23 +236,18 @@ function setFotoMes(isoYM) {
   const img = document.getElementById("imgFotoMes");
   const titol = document.getElementById("titolFoto");
 
-  // fallback per defecte (si no hi ha dades al Sheet)
+  // fallback automàtic si el Sheet no té info
   const fallbackPath = `assets/months/2026/${isoYM}.png`;
-
-  // Imatge: Sheet > fallback
   const src = (f && f.imatge) ? f.imatge : fallbackPath;
-  img.src = src;
 
-  // Títol: Sheet o buit
+  img.src = src;
   titol.textContent = (f && f.titol) ? f.titol : "";
 
-  // Click per obrir detall només si hi ha dades del Sheet
   img.onclick = (f ? () => obreModalDetallFoto(f) : null);
 
-  // Si el fallback no existeix, posa una imatge per defecte (opcional)
   img.onerror = () => {
     img.onerror = null;
-    img.src = "assets/months/2026/default.png"; // crea aquesta imatge si vols
+    img.src = "assets/months/2026/default.png"; // opcional
   };
 }
 
@@ -289,6 +287,12 @@ function dibuixaMes(isoYM) {
 
     const cel = document.createElement("div");
     cel.className = "dia";
+
+    // Diumenge o festiu (qualsevol any): número verd
+    const dow = new Date(Y, M - 1, d).getDay(); // 0 = diumenge
+    const esDiumenge = (dow === 0);
+    const esFestiu = festius.has(iso);
+    if (esDiumenge || esFestiu) cel.classList.add("festiu");
 
     // fons lluna fosca (si existeix)
     if (info?.lluna_foscor?.color) {
@@ -416,13 +420,22 @@ async function inicia() {
     const e = await loadJSON("data/efemerides_2026.json");
     efemerides = e.dies || {};
 
-    // sheets
-    const [fotos, esp] = await Promise.all([
+    // sheets (fotos + efemèrides + festius)
+    const [fotos, esp, fest] = await Promise.all([
       loadCSV(SHEET_FOTOS_MES),
-      loadCSV(SHEET_EFEMERIDES)
+      loadCSV(SHEET_EFEMERIDES),
+      loadCSV(SHEET_FESTIUS)
     ]);
+
     fotosMes = buildFotosMes(fotos);
     efemeridesEspecials = buildEfemeridesEspecials(esp);
+
+    // Festius: el Sheet només té columna "nom" amb DD-MM-YYYY
+    festius = new Set(
+      fest
+        .map(r => ddmmyyyyToISO(r.nom))
+        .filter(Boolean)
+    );
 
     // calendari
     try {
@@ -439,8 +452,14 @@ async function inicia() {
     if (navigator.onLine) {
       setTimeout(async () => {
         try {
-          const esp2 = await loadCSV(SHEET_EFEMERIDES);
+          const [esp2, fest2] = await Promise.all([
+            loadCSV(SHEET_EFEMERIDES),
+            loadCSV(SHEET_FESTIUS)
+          ]);
           efemeridesEspecials = buildEfemeridesEspecials(esp2);
+          festius = new Set(
+            fest2.map(r => ddmmyyyyToISO(r.nom)).filter(Boolean)
+          );
           renderMes(mesActual);
         } catch {}
       }, 15000);
@@ -453,41 +472,3 @@ async function inicia() {
 }
 
 inicia();
-
-// Registre SW (si el tens)
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    // Quan el nou SW pren control, recarregam una vegada per aplicar el nou codi/assets
-    window.location.reload();
-  });
-
-  window.addEventListener("load", async () => {
-    try {
-      const reg = await navigator.serviceWorker.register("sw.js");
-
-      // Si hi ha un SW nou esperant, l’activam
-      if (reg.waiting) {
-        reg.waiting.postMessage("SKIP_WAITING");
-      }
-
-      // Quan detecta un update descarregat, l’activam
-      reg.addEventListener("updatefound", () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-
-        newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed") {
-            // Si ja hi havia un SW controlant, vol dir que hi ha update
-            if (navigator.serviceWorker.controller) {
-              newWorker.postMessage("SKIP_WAITING");
-            }
-          }
-        });
-      });
-
-    } catch (e) {
-      console.warn("⚠️ No s'ha pogut registrar el Service Worker", e);
-    }
-  });
-}
-
