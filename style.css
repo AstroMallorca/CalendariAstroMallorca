@@ -27,7 +27,7 @@ body{
 }
 .btn-icon{
   background: transparent;
-  border: 0;
+  border: 10px;
   padding: 6px;
   border-radius: 10px;
 }
