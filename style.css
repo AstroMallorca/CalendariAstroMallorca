@@ -15,8 +15,8 @@ body{
   gap: 8px;
 }
 .logo-am{
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
 }
 .topbar-title{
@@ -32,8 +32,8 @@ body{
   border-radius: 10px;
 }
 .icon-btn{
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   object-fit: contain;
 }
 
@@ -48,7 +48,7 @@ body{
   border-radius: 0;
 }
 #titolFoto{
-  margin: 6px 12px 0 12px;
+  margin: 3px 12px 0 12px;
   font-size: 18px;
 }
 
@@ -225,8 +225,8 @@ body.nocturn .info-foto {
 }
 
 .comptador-eclipsi__icon{
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 
