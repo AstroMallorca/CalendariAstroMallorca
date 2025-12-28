@@ -250,7 +250,7 @@ body.nocturn .comptador-eclipsi__text{
   position: relative;
 }
 
-.badges { position: relative; }
+.dia { position: relative; }
 
 .efemerides-icons{
   position: absolute;
@@ -258,6 +258,7 @@ body.nocturn .comptador-eclipsi__text{
   bottom: 4px;
   display: flex;
   gap: 3px;
+  pointer-events: none; /* perquè no bloquegi el click */
 }
 
 .efemeride-icon{
@@ -265,3 +266,4 @@ body.nocturn .comptador-eclipsi__text{
   height: 18px;
   object-fit: contain;
 }
+
