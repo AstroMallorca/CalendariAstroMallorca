@@ -13,7 +13,7 @@ const SHEET_FESTIUS = `${BASE_SHEETS}?gid=1058273430&single=true&output=csv`;
 
 // ICS públic
 const CALENDAR_ICS =
-  "https://r.jina.ai/https://calendar.google.com/calendar/ical/astromca%40gmail.com/public/basic.ics";
+  "https://calendar.google.com/calendar/ical/astromca%40gmail.com/public/basic.ics";
 
 // Mesos en català
 const MESOS_CA = [
@@ -301,52 +301,51 @@ async function loadCSV(url) {
   const t = await r.text();
   return rowsToObjects(parseCSV(t));
 }
-async function loadICS(url) {
-  // Intentam diverses passarel·les per evitar CORS / bloquejos.
-  // Si el que ens passen ja és r.jina.ai, també provam l'URL original de Google.
-  const rawUrl = url.startsWith("https://r.jina.ai/") ? url.replace(/^https:\/\/r\.jina\.ai\/https?:\/\//, "https://") : url;
-
-  const targets = [
-    url,
-    rawUrl,
-    // AllOrigins (raw)
-    "https://api.allorigins.win/raw?url=" + encodeURIComponent(rawUrl),
-    // corsproxy.io
-    "https://corsproxy.io/?" + encodeURIComponent(rawUrl),
-    // isomorphic-git cors proxy
-    "https://cors.isomorphic-git.org/" + rawUrl,
-    // thingproxy
-    "https://thingproxy.freeboard.io/fetch/" + rawUrl
+async function loadICS(baseUrl) {
+  // Intentam diverses passarel·les per esquivar CORS.
+  // IMPORTANT: només acceptam respostes que mantinguin salts de línia tipus ICS (no "aplanades").
+  const candidates = [
+    baseUrl,
+    "https://cors.isomorphic-git.org/" + baseUrl,
+    "https://corsproxy.io/?" + encodeURIComponent(baseUrl),
+    "https://thingproxy.freeboard.io/fetch/" + baseUrl,
+    "https://r.jina.ai/" + baseUrl
   ];
 
-  let lastErr = null;
+  function semblaICSValid(t) {
+    if (!t) return false;
+    // Ha de tenir calendari i, sobretot, VEVENT en línies separades (no "BEGIN:VEVENT DTSTART:..." en una sola línia)
+    if (!t.includes("BEGIN:VCALENDAR")) return false;
+    const hasVeLine = t.includes("\nBEGIN:VEVENT") || t.includes("\r\nBEGIN:VEVENT");
+    const hasDtLine = t.includes("\nDTSTART") || t.includes("\r\nDTSTART");
+    return hasVeLine && hasDtLine;
+  }
 
-  for (const u of targets) {
+  let lastErr = null;
+  for (const url of candidates) {
     try {
-      const r = await fetch(u, { cache: "no-store" });
+      const r = await fetch(url, { cache: "no-store" });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       let t = await r.text();
 
+      // Retallam a partir del BEGIN:VCALENDAR per si hi ha cap capçalera extra
       const idx = t.indexOf("BEGIN:VCALENDAR");
       if (idx !== -1) t = t.slice(idx);
 
-      // Guardam per depurar des del navegador
-      window.__AM_LAST_ICS_URL__ = u;
-      window.__AM_LAST_ICS_HEAD__ = t.slice(0, 200);
+      if (!semblaICSValid(t)) {
+        // Si és la versió "aplanada" (r.jina.ai), descartam i provam el següent.
+        throw new Error("Format ICS no vàlid (possiblement sense salts de línia)");
+      }
 
-      if (!t.includes("BEGIN:VEVENT")) throw new Error("Resposta sense VEVENT");
-
-      console.info("[ICS] OK via:", u, "len:", t.length);
+      console.info("[ICS] OK via:", url, "len:", t.length);
       return t;
-    } catch (err) {
-      lastErr = err;
-      console.warn("[ICS] falla via:", u, err);
+    } catch (e) {
+      console.warn("[ICS] falla via:", url, e.message || e);
+      lastErr = e;
     }
   }
-
-  throw (lastErr || new Error("No puc carregar ICS"));
+  throw lastErr || new Error("No puc carregar ICS");
 }
-
 
 // === Transformacions ===
 function buildEfemeridesEspecials(objs) {
