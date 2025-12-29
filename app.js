@@ -3,12 +3,13 @@
 // === URLs (les teves) ===
 const BASE_SHEETS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWf6OL8LYzMsBPuxvI_h4s9-0__hru3hWK9D2ewyccoku9ndl2VhZOGS8P9uEigShJEehsy2UktnY2/pub";
 
-const SHEET_FOTOS_MES = `${BASE_SHEETS}?gid=0&single=true&output=csv`;
-const SHEET_EFEMERIDES = `${BASE_SHEETS}?gid=1305356303&single=true&output=csv`;
-const SHEET_CONFIG = `${BASE_SHEETS}?gid=1324899531&single=true&output=csv`;
+
+const SHEET_FOTOS_MES = `${BASE_SHEETS}?output=csv&gid=0`;
+const SHEET_EFEMERIDES = `${BASE_SHEETS}?output=csv&gid=1305356303`;
+const SHEET_CONFIG = `${BASE_SHEETS}?output=csv&gid=1324899531`;
 
 // ✅ FESTIUS (A=data DD-MM-YYYY, B=nom)
-const SHEET_FESTIUS = `${BASE_SHEETS}?gid=1058273430&single=true&output=csv`;
+const SHEET_FESTIUS = `${BASE_SHEETS}?output=csv&gid=1058273430`;
 
 // ICS públic
 const CALENDAR_ICS =
