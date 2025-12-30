@@ -685,4 +685,14 @@ async function inicia() {
 
 inicia();
 iniciaCompteEnrereEclipsi();
+const comptador = document.querySelector(".comptador-eclipsi");
+if (comptador) {
+  comptador.style.cursor = "pointer";
+  comptador.addEventListener("click", () => {
+    window.open(
+      "https://astromallorca.wordpress.com/eclipsis/",
+      "_blank"
+    );
+  });
+}
 
