@@ -742,7 +742,7 @@ async function obreDia(iso) {
 
   const nomFestiu = festius.get(iso);
 
-  const llunaTxt = info.lluna ? `${info.lluna.fase || ""} (${info.lluna.il_luminacio_percent ?? ""}%)` : "—";
+  const llunaFaseTxt = info.lluna ? `${info.lluna.fase || ""} (${info.lluna.il_luminacio_percent ?? ""}%)` : "—";
   const astrofoto = info.lluna_foscor?.apte_astrofotografia ? "🌑 Dia favorable per astrofotografia" : "";
 
   const espHtml = esp.length
