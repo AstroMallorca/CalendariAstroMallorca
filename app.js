@@ -636,6 +636,7 @@ function obreModalDetallFoto(f) {
     <p>${f.descripcio_llarga || f.descripcio_curta || ""}</p>
   `;
   modal.classList.remove("ocult");
+  };
 }
 
 function dibuixaMes(isoYM) {
