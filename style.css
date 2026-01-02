@@ -485,3 +485,11 @@ body.nocturn .dia-list li,
 body.nocturn .dia-hitem {
   color: #ff6b6b;
 }
+.foto-tech{
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.35;
+  opacity: .9;
+  word-break: break-word; /* farà que salti a 2 línies si cal */
+}
+
