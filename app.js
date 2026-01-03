@@ -340,6 +340,14 @@ function isoToDDMMYYYY(iso){
   const [y,m,d] = iso.split("-");
   return `${d}-${m}-${y}`;
 }
+function weekdayCA2(iso){
+  // iso = "YYYY-MM-DD"
+  const [y,m,d] = iso.split("-").map(Number);
+  const dow = new Date(y, m-1, d).getDay(); // 0=dg..6=ds
+
+  const names = ["Dg","Dl","Dt","Dc","Dj","Dv","Ds"];
+  return names[dow];
+}
 
 function pad2(n){ return String(n).padStart(2,"0"); }
 
@@ -919,7 +927,7 @@ const histItems = renderHistoricItems(rawHist);
     <div class="dia-header dia-header-nav">
   <button class="dia-nav dia-prev" data-dir="-1" aria-label="Dia anterior">◀</button>
 
-  <div class="dia-date">${isoToDDMMYYYY(iso)}</div>
+  <div class="dia-date">${weekdayCA2(iso)} ${isoToDDMMYYYY(iso)}</div>
 
   <button class="dia-nav dia-next" data-dir="1" aria-label="Dia següent">▶</button>
 </div>
