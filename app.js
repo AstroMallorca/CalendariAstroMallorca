@@ -725,45 +725,6 @@ function obreModalDetallFoto(f) {
   `;
 
   modal.classList.remove("ocult");
-  }
-  // Navegació dia anterior / següent
-const btnPrev = contingutDia.querySelector(".dia-prev");
-const btnNext = contingutDia.querySelector(".dia-next");
-
-const toDate = (iso) => {
-  const [y,m,d] = iso.split("-").map(Number);
-  return new Date(y, m-1, d);
-};
-
-const toISO = (date) => {
-  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
-};
-
-const curDate = toDate(iso);
-
-if (btnPrev){
-  const prev = new Date(curDate);
-  prev.setDate(prev.getDate() - 1);
-  const prevISO = toISO(prev);
-
-  // límit 2026
-  if (prevISO < "2026-01-01") {
-    btnPrev.disabled = true;
-  } else {
-    btnPrev.onclick = () => obreDia(prevISO);
-  }
-}
-
-if (btnNext){
-  const next = new Date(curDate);
-  next.setDate(next.getDate() + 1);
-  const nextISO = toISO(next);
-
-  if (nextISO > "2026-12-31") {
-    btnNext.disabled = true;
-  } else {
-    btnNext.onclick = () => obreDia(nextISO);
-  }
 }
 
 function dibuixaMes(isoYM) {
@@ -1023,7 +984,39 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
   });
 
   modal.classList.remove("ocult");
+  // === Navegació dia anterior / següent ===
+const btnPrev = contingutDia.querySelector(".dia-prev");
+const btnNext = contingutDia.querySelector(".dia-next");
+
+const toDate = (isoStr) => {
+  const [y,m,d] = isoStr.split("-").map(Number);
+  return new Date(y, m-1, d);
+};
+
+const toISO = (date) => {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+};
+
+const curDate = toDate(iso);
+
+if (btnPrev){
+  const prev = new Date(curDate);
+  prev.setDate(prev.getDate() - 1);
+  const prevISO = toISO(prev);
+
+  btnPrev.disabled = (prevISO < "2026-01-01");
+  if (!btnPrev.disabled) btnPrev.onclick = () => obreDia(prevISO);
 }
+
+if (btnNext){
+  const next = new Date(curDate);
+  next.setDate(next.getDate() + 1);
+  const nextISO = toISO(next);
+
+  btnNext.disabled = (nextISO > "2026-12-31");
+  if (!btnNext.disabled) btnNext.onclick = () => obreDia(nextISO);
+}
+
 
 document.querySelector(".tancar").onclick = () => modal.classList.add("ocult");
 botoNocturn.onclick = () => document.body.classList.toggle("nocturn");
