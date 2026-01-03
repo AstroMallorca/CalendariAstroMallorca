@@ -872,9 +872,20 @@ const meta = (it.category || it.type)
 
 // si hi ha títol i descripció → "Títol: descripció"
 // si només hi ha text → "text"
-const line = (title && desc)
-  ? `${year}${title}: ${desc}${meta}`
-  : `${year}${title || desc}${meta}`;
+let line = "";
+
+if (desc) {
+  // Separam el nom (abans de la primera coma) de la resta
+  const parts = desc.split(",");
+  const name = parts.shift().trim();
+  const rest = parts.length ? ", " + parts.join(",").trim() : "";
+
+  if (year) {
+    line = `${year.replace(" —", ":")} <b>${name}</b>${rest}${meta}`;
+  } else {
+    line = `<b>${name}</b>${rest}${meta}`;
+  }
+}
 
 return `<li>${line}</li>`;
 
