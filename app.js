@@ -865,13 +865,19 @@ const year = yv ? `<b>${yv}</b> — ` : "";
 const title = it.title || it.titol || it.nom || "";
 const desc  = it.description || it.descripcio || it.descripció || it.text || it.texto || "";
 
+// (opcional) category/type al final, en petit
+const meta = (it.category || it.type)
+  ? ` <span style="opacity:.7;font-size:.9em">(${[it.category,it.type].filter(Boolean).join(" · ")})</span>`
+  : "";
+
 // si hi ha títol i descripció → "Títol: descripció"
 // si només hi ha text → "text"
 const line = (title && desc)
   ? `${year}${title}: ${desc}${meta}`
   : `${year}${title || desc}${meta}`;
 
-      return `<li>${line}</li>`;
+return `<li>${line}</li>`;
+
     }).join("")}</ul>`
   : `<h3>Efemèrides històriques</h3><p>Cap efemèride trobada.</p>`;
     // Sol i Lluna: sortida i posta (hora local dispositiu)
