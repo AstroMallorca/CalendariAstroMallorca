@@ -173,16 +173,15 @@ body.nocturn .dia.altre-mes .num{
   right: 4px;
   bottom: 4px;
 
-  display:flex;
+  display: flex;
+  flex-direction: column;   /* ✅ vertical */
   gap: 4px;
-  justify-content: flex-end;
   align-items: flex-end;
-  flex-wrap: wrap;
 
-  max-width: 70%;
-  max-height: 32px;
+  max-height: 70%;
   overflow: hidden;
 }
+
 .badge{
   font-size: 10px;
   padding: 2px 6px;
