@@ -99,8 +99,9 @@
     const observer = {
       latitude:  Number.isFinite(lat) ? lat : 39.5696,
       longitude: Number.isFinite(lon) ? lon : 2.6502,
-      elevation: Number.isFinite(elev) ? elev : 0
+      elevation: Number.isFinite(elev) ? elev : 
     };
+    const obs = new Astronomy.Observer(observer.latitude, observer.longitude, observer.elevation);
 
     // Data base en hora local del dispositiu
     function parseISODateLocal(iso){
@@ -131,27 +132,31 @@
 
     function tryRiseSet(direction, startDate){
       try{
-        const evt = Astronomy.SearchRiseSet(Astronomy.Body.Sun, observer, direction, startDate, 2);
+        const evt = Astronomy.SearchRiseSet(Astronomy.Body.Sun, obs, direction, startDate, 2);
         // evt.time.date és Date
         return evt?.time?.date ? new Date(evt.time.date.getTime()) : null;
       }catch(e){
-        return null;
-      }
+  console.error("Rise/Set error:", e);
+  return null;
+}
+
     }
 
     function tryAltitudeCrossing(altDeg, direction, startDate){
       try{
-        const evt = Astronomy.SearchAltitude(Astronomy.Body.Sun, observer, direction, startDate, 2, altDeg);
+        const evt = Astronomy.SearchAltitude(Astronomy.Body.Sun, obs, direction, startDate, 2, altDeg);
         return evt?.time?.date ? new Date(evt.time.date.getTime()) : null;
-      }catch(e){
-        return null;
-      }
+      }}catch(e){
+  console.error("Rise/Set error:", e);
+  return null;
+}
     }
 
     function sunAltitudeAt(date){
       const t = Astronomy.MakeTime(date);
-      const eq = Astronomy.Equator(Astronomy.Body.Sun, t, observer, true, true);
-      const hz = Astronomy.Horizon(t, observer, eq.ra, eq.dec, "normal");
+      const eq = Astronomy.Equator(Astronomy.Body.Sun, t, obs, true, true);
+      const hz = Astronomy.Horizon(t, obs, eq.ra, eq.dec, "normal");
+
       return hz.altitude;
     }
 
@@ -190,7 +195,7 @@
     let solarNoon = null;
     let maxAlt = null;
     try{
-      const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, observer, startMorning, 2);
+      const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, obs, startMorning, 2);
       solarNoon = tr?.time?.date ? new Date(tr.time.date.getTime()) : null;
       if (solarNoon) maxAlt = sunAltitudeAt(solarNoon);
     }catch(e){}
