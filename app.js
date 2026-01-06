@@ -1047,7 +1047,10 @@ if (btnNext){
 }
 
 document.querySelector(".tancar").onclick = () => modal.classList.add("ocult");
-botoNocturn.onclick = () => document.body.classList.toggle("nocturn");
+botoNocturn.onclick = () => {
+  const on = document.body.classList.toggle("nocturn");
+  localStorage.setItem("nocturn", on ? "1" : "0");
+};
 
 // === ANIMACIÓ SWIPE ===
 const swipeInner = document.getElementById("swipeInner");
