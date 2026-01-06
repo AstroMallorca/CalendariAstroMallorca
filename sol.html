@@ -207,10 +207,26 @@ function tryAltitudeCrossing(altDeg, direction, startDate){
 let maxAlt = NaN;
 
 try{
-  const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, obs, startMorning, 2);
+  clet solarNoon = null;
+let maxAlt = NaN;
 
-  // ✅ SearchTransit retorna AstroEvent -> tr.time és AstroTime
-  solarNoon = (tr && tr.time && tr.time.date) ? new Date(tr.time.date.getTime()) : null;
+try{
+  // ✅ Signatura correcta: (body, observer, direction, startTime, limitDays)
+  const tr = Astronomy.SearchTransit(Astronomy.Body.Sun, obs, +1, startMorning, 2);
+
+  // Segons versions pot retornar:
+  // - AstroEvent { time: AstroTime, ... }
+  // - o directament AstroTime
+  const tt = (tr && tr.time) ? tr.time : tr;
+
+  solarNoon = (tt && tt.date) ? new Date(tt.date.getTime()) : null;
+
+  if (solarNoon) {
+    maxAlt = sunAltitudeAt(solarNoon);
+  }
+}catch(e){
+  console.warn("SearchTransit error:", e);
+}
 
   if (solarNoon) {
     maxAlt = sunAltitudeAt(solarNoon);
