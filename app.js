@@ -946,7 +946,7 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
 
     <!-- 5) Bloc Sol/Lluna/Planetes/Messiers -->
     <div class="dia-card">
-      <div class="dia-row dia-link" data-href="sol.html?date=${iso}">
+      <div class="dia-row dia-link" data-href="sol.html?date=${iso}${obsQ}">
         <div class="dia-row-icon">🌞</div>
         <div class="dia-row-text">
           <div class="dia-row-title">Sortida i posta de Sol</div>
@@ -954,7 +954,7 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
         </div>
       </div>
 
-      <div class="dia-row dia-link" data-href="lluna.html?date=${iso}">
+      <div class="dia-row dia-link" data-href="lluna.html?date=${iso}${obsQ}">
         <div class="dia-row-icon">🌙</div>
         <div class="dia-row-text">
           <div class="dia-row-title">Sortida i posta de Lluna</div>
@@ -962,7 +962,7 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
         </div>
       </div>
 
-      <div class="dia-row dia-link" data-href="planetes.html?date=${iso}">
+      <div class="dia-row dia-link" data-href="planetes.html?date=${iso}${obsQ}">
         <div class="dia-row-icon">🪐</div>
         <div class="dia-row-text">
           <div class="dia-row-title">Planetes visibles</div>
@@ -970,7 +970,7 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
         </div>
       </div>
 
-      <div class="dia-row dia-link" data-href="messiers.html?date=${iso}">
+      <div class="dia-row dia-link" data-href="messiers.html?date=${iso}${obsQ}">
         <div class="dia-row-icon">🌌</div>
         <div class="dia-row-text">
           <div class="dia-row-title">Messiers visibles</div>
