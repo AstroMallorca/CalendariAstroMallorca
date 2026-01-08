@@ -124,6 +124,51 @@ function phaseLabelFromDeg(phaseDeg){
   // resta: entre 270+tol i 360-tol
   return "Crescent minvant";
 }
+function inSameLocalDay(d, day){
+  const a0 = new Date(day); a0.setHours(0,0,0,0);
+  const a1 = new Date(day); a1.setHours(23,59,59,999);
+  return d >= a0 && d <= a1;
+}
+
+// Retorna el nom “oficial de calendari” del dia si hi ha fase exacta (nova/plena/quarts)
+function phaseExactNameForDay(day){
+  // Cercam a partir del migdia local (estable) dins +/- 2 dies
+  const t0 = Astronomy.MakeTime(day);
+
+  // Ordre d'importància: nova, quart creixent, plena, quart minvant (o el que prefereixis)
+  const targets = [
+    { angle: 0,   name: "Lluna nova" },
+    { angle: 90,  name: "Quart creixent" },
+    { angle: 180, name: "Lluna plena" },
+    { angle: 270, name: "Quart minvant" },
+  ];
+
+  for (const it of targets){
+    const ev = Astronomy.SearchMoonPhase(it.angle, t0, 2); // dins ±2 dies
+    if (ev && inSameLocalDay(ev.date, day)) return it.name;
+  }
+  return "";
+}
+
+// Etiqueta completa “estil calendari astronòmic”
+function phaseLabelForDay(phaseDeg, illum, day){
+  // 1) Si hi ha fase exacta dins el dia, PRIORITAT absoluta
+  const exact = phaseExactNameForDay(day);
+  if (exact) return exact;
+
+  // 2) Si no, classificació per trams (creixent/minvant + crescent/gibosa)
+  const d = ((phaseDeg % 360) + 360) % 360;
+
+  if (d > 0 && d < 180){
+    // creixent
+    if (illum < 0.5) return "Crescent creixent";
+    return "Gibosa creixent";
+  }else{
+    // minvant
+    if (illum < 0.5) return "Crescent minvant";
+    return "Gibosa minvant";
+  }
+}
 
     // Dibuix: terminador real (el·lipse) + anells apogeu/perigeu + mida function renderMoonSVG(opts){
   function renderMoonSVG(opts){
@@ -256,10 +301,10 @@ function phaseLabelFromDeg(phaseDeg){
         const u = clamp((angArcmin - APog) / (PErig - APog), 0, 1);
         const R_now = R_apogeu + u * (R_perigeu - R_apogeu);
 
-        const label = phaseLabelFromDeg(phaseDeg);
+        const label = phaseLabelForDay(phaseDeg, illum, day);
 
 kpiEl.innerHTML =
-  `<b>Il·luminació:</b> ${fmtPct(illum*100, 1)}\n` +
+  `<b>Il·luminació:</b> ${fmtPct(illum*100, 2)}\n` +
   `<b>Fase:</b> ${phaseDeg.toFixed(1)}° · ${label}\n` +
   `<b>Mida aparent:</b> ${angArcmin.toFixed(1)}′`;
 
