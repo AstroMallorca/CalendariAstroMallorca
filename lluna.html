@@ -124,6 +124,12 @@ a:active{ opacity:1; }
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+ .subphase{
+  text-align:center;
+  color:var(--muted);
+  font-size: 18px;
+  margin: 0 0 6px;
+}   
 
 /* link tornar */
 #back{ color: var(--text); opacity: .9; }
@@ -137,7 +143,9 @@ a:active{ opacity:1; }
     </div>
 
     <div class="header">
-      <h1 id="title">—</h1>
+     <h1 id="title">—</h1>
+<div class="subphase" id="subphase"></div>
+
     </div>
 
     <div class="sub">
@@ -239,6 +247,20 @@ a:active{ opacity:1; }
       if (!s) return s;
       return s.charAt(0).toUpperCase() + s.slice(1);
     }
+    function fmtTimeHM(d){
+  // hora local HH:MM
+  return new Intl.DateTimeFormat("ca-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(d);
+}
+
+function phaseExactLabelWithTime(day){
+  const ev = phaseExactEventForDay(day);
+  if (!ev) return "";
+  return `${ev.name} a les ${fmtTimeHM(ev.date)}`;
+}
 
     function moonDistanceKmAt(date){
       const t = Astronomy.MakeTime(date);
@@ -409,13 +431,25 @@ a:active{ opacity:1; }
 
         // TÍTOL (fase) + Superlluna si toca
         const exactEv = phaseExactEventForDay(day);
-        const label = phaseLabelForDay(phaseDeg, illum, day);
+const label = phaseLabelForDay(phaseDeg, illum, day);
 
-        let title = titleCaseCatalan(label);
-        if (exactEv && exactEv.name === "Lluna plena" && isSupermoon(exactEv.date)){
-          title += " · Superlluna";
-        }
-        document.getElementById("title").textContent = title;
+// Títol
+let title = titleCaseCatalan(label);
+if (exactEv && exactEv.name === "Lluna plena" && isSupermoon(exactEv.date)){
+  title += " · Superlluna";
+}
+document.getElementById("title").textContent = title;
+
+// Subtítol d'hora (només si hi ha fase exacta)
+const sub = document.getElementById("subphase");
+if (sub){
+  if (exactEv){
+    sub.textContent = `(${fmtTimeHM(exactEv.date)})`;
+  }else{
+    sub.textContent = "";
+  }
+}
+
 
         // KPI
         document.getElementById("kIll").textContent      = fmtPct(illum*100, 2);
