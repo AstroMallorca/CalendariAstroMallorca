@@ -420,15 +420,22 @@ function safeMakeTime(x){
 
     // ======= ALTURA (per mostreig) =======
     function bodyAltitudeDeg(body, observer, date){
-      const t = safeMakeTime(date);
-      const eq = Astronomy.Equator(body, t, observer, true, true);
-      if (!eq || !Number.isFinite(eq.ra) || !Number.isFinite(eq.dec)) return null;
+  const t = safeMakeTime(date);
+  const eq = Astronomy.Equator(body, t, observer, true, true);
+  if (!eq || !Number.isFinite(eq.ra) || !Number.isFinite(eq.dec)) return null;
 
-      const hor = Astronomy.Horizon(t, observer, eq.ra, eq.dec, true);
-      if (!hor || !Number.isFinite(hor.altitude)) return null;
+  // Prova diferents formes de "refraction" segons la versió
+  let hor = null;
 
-      return hor.altitude;
-    }
+  try { hor = Astronomy.Horizon(t, observer, eq.ra, eq.dec, "none"); } catch(e) {}
+  if (!hor) { try { hor = Astronomy.Horizon(t, observer, eq.ra, eq.dec, 0); } catch(e) {} }
+  if (!hor) { try { hor = Astronomy.Horizon(t, observer, eq.ra, eq.dec, false); } catch(e) {} }
+  if (!hor) { try { hor = Astronomy.Horizon(t, observer, eq.ra, eq.dec); } catch(e) {} }
+
+  if (!hor || !Number.isFinite(hor.altitude)) return null;
+  return hor.altitude;
+}
+
 // Troba el moment exacte (aprox) en què l'altura creua targetAlt (normalment 0°)
 // dins l'interval [tA, tB] fent bisecció.
 function refineCrossingTime(body, observer, tA, tB, targetAlt = 0, iters = 25){
