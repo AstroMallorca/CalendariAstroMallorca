@@ -630,6 +630,10 @@ statsEl.style.display = "none";
 const day0 = new Date(day); day0.setHours(0,0,0,0);
 
 // Cercam rise/set a partir de (dia - 12h) per agafar el cicle correctament
+   if (!(day0 instanceof Date) || !Number.isFinite(day0.getTime())){
+  throw new Error("Dia invàlid (dateStr). Revisa el paràmetre ?date=YYYY-MM-DD");
+}
+
 const startSearch = new Date(day0.getTime() - 12*3600*1000);
 
 const riseEv = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, startSearch, 3);
