@@ -361,13 +361,39 @@ a:active{ opacity:1; }
       const dtHours = Math.abs(fullMoonDate.getTime() - minT.getTime()) / (1000*3600);
       return (dtHours <= 24) && (fullKm <= 360000);
     }
+function evToDate(x){
+  if (!x) return null;
 
-    function getAltitudeDeg(body, observer, date){
-      const t = Astronomy.MakeTime(date);
-      const eq = Astronomy.Equator(body, t, observer, true, true);
-      const hor = Astronomy.Horizon(t, observer, eq.ra, eq.dec, "normal");
-      return hor.altitude;
-    }
+  // ja és Date
+  if (x instanceof Date) return Number.isFinite(x.getTime()) ? x : null;
+
+  // Search* sovint retorna AstroTime (té .ToDate())
+  if (typeof x.ToDate === "function"){
+    const d = x.ToDate();
+    return (d instanceof Date && Number.isFinite(d.getTime())) ? d : null;
+  }
+
+  // algunes versions retornen { date: Date }
+  if (x.date instanceof Date) return Number.isFinite(x.date.getTime()) ? x.date : null;
+
+  return null;
+}
+
+function safeMakeTime(x){
+  // admet Date o AstroTime
+  if (!x) throw new Error("safeMakeTime: data buida");
+  if (x instanceof Date) return Astronomy.MakeTime(x);
+  if (typeof x.ToDate === "function") return x; // AstroTime ja és vàlid
+  if (typeof x.ut === "number") return x;       // AstroTime (forma alternativa)
+  return Astronomy.MakeTime(x);
+}
+
+function getAltitudeDeg(body, observer, dateOrTime){
+  const t = safeMakeTime(dateOrTime);
+  const eq = Astronomy.Equator(body, t, observer, true, true);
+  const hor = Astronomy.Horizon(t, observer, eq.ra, eq.dec, "normal");
+  return hor.altitude;
+}
 
     function renderArcChart({ rise, transit, set, altMaxDeg }){
       const W = 520, H = 160;
@@ -553,77 +579,81 @@ a:active{ opacity:1; }
 
         box.innerHTML = renderMoonSVG({ R_perigeu, R_apogeu, R_now, illum, waxing });
 
-        // ======= Gràfica + temps total (NET) =======
-        const chartWrap = document.getElementById("chartWrap");
-        const statsOne  = document.getElementById("statsOne");
-        chartWrap.style.display = "none";
-        statsOne.style.display  = "none";
+       // ======= Gràfica + temps total (NET) =======
+const chartWrap = document.getElementById("chartWrap");
+const statsOne  = document.getElementById("statsOne");
+chartWrap.style.display = "none";
+statsOne.style.display  = "none";
 
-        // Base migdia local
-        const base = new Date(day);
-        base.setHours(12,0,0,0);
+// Base migdia local
+const base = new Date(day);
+base.setHours(12,0,0,0);
 
-        const start = new Date(base.getTime() - 18*3600*1000);
-        const tStart = Astronomy.MakeTime(start);
+// Començam 18h abans per assegurar que trobam el primer rise/set proper
+const start = new Date(base.getTime() - 18*3600*1000);
 
-        // IMPORTANT:
-        // SearchRiseSet(..., metersAboveGround) -> ha de ser >= 0
-        const metersAboveGround = 0;
+// SearchRiseSet(..., metersAboveGround) -> ha de ser >= 0
+const metersAboveGround = 0;
 
-        const riseEv = Astronomy.SearchRiseSet(
-          Astronomy.Body.Moon,
-          observer,
-          +1,
-          tStart,
-          2,
-          metersAboveGround
-        );
+// 1) RISE
+const riseEv = Astronomy.SearchRiseSet(
+  Astronomy.Body.Moon,
+  observer,
+  +1,
+  start,              // 👈 passam Date directament (robust)
+  2,
+  metersAboveGround
+);
 
-        if (riseEv){
-          const rise = riseEv.date;
+const rise = evToDate(riseEv);
 
-          const tAfterRise = Astronomy.MakeTime(new Date(rise.getTime() + 60*1000));
+if (rise){
+  // 2) SET (cercam després del rise)
+  const afterRise = new Date(rise.getTime() + 60*1000);
 
-          const setEv = Astronomy.SearchRiseSet(
-            Astronomy.Body.Moon,
-            observer,
-            -1,
-            tAfterRise,
-            2,
-            metersAboveGround
-          );
+  const setEv = Astronomy.SearchRiseSet(
+    Astronomy.Body.Moon,
+    observer,
+    -1,
+    afterRise,        // 👈 Date
+    2,
+    metersAboveGround
+  );
 
-          if (setEv){
-            const set = setEv.date;
+  const set = evToDate(setEv);
 
-            const trEv = Astronomy.SearchTransit(
-              Astronomy.Body.Moon,
-              observer,
-              Astronomy.MakeTime(rise),
-              2
-            );
+  if (set){
+    // 3) TRANSIT (màxim) dins el mateix cicle
+    const trEv = Astronomy.SearchTransit(
+      Astronomy.Body.Moon,
+      observer,
+      rise,            // 👈 Date (també val)
+      2
+    );
 
-            if (trEv){
-              const transit = trEv.date;
+    const transit = evToDate(trEv);
 
-              let altMax = null;
-              try { altMax = getAltitudeDeg(Astronomy.Body.Moon, observer, transit); } catch(e){}
+    if (transit){
+      let altMax = null;
+      try { altMax = getAltitudeDeg(Astronomy.Body.Moon, observer, transit); } catch(e){}
 
-              const aboveMs = Math.max(0, set.getTime() - rise.getTime());
+      // temps total simple (rise->set)
+      const aboveMs = Math.max(0, set.getTime() - rise.getTime());
 
-              document.getElementById("chartTitle").textContent =
-                `Altura max: ${Number.isFinite(altMax) ? Math.round(altMax) + "°" : "—"}`;
+      document.getElementById("chartTitle").textContent =
+        `Altura max: ${Number.isFinite(altMax) ? Math.round(altMax) + "°" : "—"}`;
 
-              document.getElementById("chartBox").innerHTML =
-                renderArcChart({ rise, transit, set, altMaxDeg: altMax });
+      document.getElementById("chartBox").innerHTML =
+        renderArcChart({ rise, transit, set, altMaxDeg: altMax });
 
-              document.getElementById("sAbove").textContent = fmtDurationHM(aboveMs);
+      document.getElementById("sAbove").textContent = fmtDurationHM(aboveMs);
 
-              chartWrap.style.display = "";
-              statsOne.style.display  = "";
-            }
-          }
-        }
+      chartWrap.style.display = "";
+      statsOne.style.display  = "";
+    }
+  }
+}
+
 
       }catch(e){
         console.error(e);
