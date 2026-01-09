@@ -348,7 +348,7 @@ a:active{ opacity:1; }
 
     // ======= DISTÀNCIA / APSIS / SUPERLLUNA =======
     function moonDistanceKmAt(date){
-      const t = Astronomy.MakeTime(date);
+      const t = safeMakeTime(date);
       const v = Astronomy.GeoVector(Astronomy.Body.Moon, t, true);
       const rAU = Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
       const AU_KM = (typeof Astronomy.AU_KM === "number") ? Astronomy.AU_KM : 149597870.7;
@@ -394,10 +394,33 @@ a:active{ opacity:1; }
       const dtHours = Math.abs(fullMoonDate.getTime() - minT.getTime()) / (1000*3600);
       return (dtHours <= 24) && (fullKm <= 360000);
     }
+function toDate(x){
+  if (!x) return null;
+
+  // ja és Date
+  if (x instanceof Date) return Number.isFinite(x.getTime()) ? x : null;
+
+  // si és un objecte retornat per Astronomy (rise/set/transit)
+  if (x.date instanceof Date) return Number.isFinite(x.date.getTime()) ? x.date : null;
+
+  // si és un AstroTime amb mètode .ToDate()
+  if (typeof x.ToDate === "function"){
+    const d = x.ToDate();
+    return (d instanceof Date && Number.isFinite(d.getTime())) ? d : null;
+  }
+
+  return null;
+}
+
+function safeMakeTime(x){
+  // evita petades si ens arriba un event en lloc d’un Date
+  const d = toDate(x) || x;   // si ja és AstroTime, el deixam passar
+  return Astronomy.MakeTime(d);
+}
 
     // ======= ALTURA (per mostreig) =======
     function bodyAltitudeDeg(body, observer, date){
-      const t = Astronomy.MakeTime(date);
+      const t = safeMakeTime(date);
       const eq = Astronomy.Equator(body, t, observer, true, true);
       if (!eq || !Number.isFinite(eq.ra) || !Number.isFinite(eq.dec)) return null;
 
@@ -639,21 +662,21 @@ const startSearch = new Date(day0.getTime() - 12*3600*1000);
 const riseEv = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, +1, startSearch, 3);
 let setEv    = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, startSearch, 3);
 
-const rise = riseEv ? riseEv.date : null;
-let set    = setEv  ? setEv.date  : null;
+const rise = toDate(riseEv);
+let set    = toDate(setEv);
 
 // Si set surt abans de rise, cercam la següent posta després de rise
 if (rise && set && set.getTime() <= rise.getTime()){
   const afterRise = new Date(rise.getTime() + 5*60*1000);
   const set2 = Astronomy.SearchRiseSet(Astronomy.Body.Moon, observer, -1, afterRise, 3);
-  set = set2 ? set2.date : set;
+set = toDate(set2) || set;
 }
 
 // Transit: millor amb SearchTransit si existeix
 let transit = null;
 if (typeof Astronomy.SearchTransit === "function"){
   const trEv = Astronomy.SearchTransit(Astronomy.Body.Moon, observer, startSearch, 3);
-  transit = trEv ? trEv.date : null;
+  ttransit = toDate(trEv);
 }
 
 // Si no hi ha SearchTransit (o falla), fem un “fallback” simple: punt mig rise-set
