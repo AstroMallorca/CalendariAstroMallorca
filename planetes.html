@@ -128,20 +128,25 @@
     }
     .title{ text-align:center; }
     .meta-center{ text-align:center; }
-    .dot.ring{
+
+.dot.ring{
   position: relative;
 }
+
 .dot.ring::after{
   content:"";
   position:absolute;
   left:50%;
   top:50%;
-  width: 20px;
-  height: 10px;
-  border: 2px solid var(--border);
+  width: 18px;
+  height: 8px;
+  border: 1.5px solid var(--border);
   border-radius: 999px;
   transform: translate(-50%, -50%) rotate(-20deg);
+  opacity: 0.8;
+  pointer-events: none;
 }
+
 th.time{ text-align:right; }
 
   </style>
