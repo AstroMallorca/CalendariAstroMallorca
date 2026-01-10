@@ -386,15 +386,37 @@ ctx.restore();
   const x = cx + r * Math.cos(ang);
   const y = cy - r * Math.sin(ang);
 
+ const pr = planetRadius(pl.name);
+
+// 🔵 Anells de Saturn (dibuixats abans del planeta)
+if (pl.name === "Saturn") {
   ctx.save();
-  ctx.fillStyle = pl.color;
-  ctx.beginPath();
-  ctx.arc(x, y, 10, 0, Math.PI*2);
-  ctx.fill();
-  ctx.lineWidth = 2;
+  ctx.translate(x, y);
+  ctx.rotate(-0.4); // inclinació dels anells
   ctx.strokeStyle = stroke;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, pr * 1.8, pr * 0.7, 0, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
+}
+
+// 🪐 Planeta
+ctx.save();
+ctx.fillStyle = pl.color;
+ctx.beginPath();
+ctx.arc(x, y, pr, 0, Math.PI * 2);
+ctx.fill();
+ctx.lineWidth = 2;
+ctx.strokeStyle = stroke;
+ctx.stroke();
+ctx.restore();
+
+}
+function planetRadius(name){
+  if (name === "Júpiter") return 16;   // més gran
+  if (name === "Saturn")  return 13;   // una mica més gran també
+  return 10;                           // resta
 }
 
 
