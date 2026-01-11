@@ -1104,12 +1104,12 @@ const especialsHtml = teEspecials
     : "";
   contingutDia.innerHTML = `
     <!-- 1) Data -->
-    <div class="dia-header dia-header-nav">
-  <button class="dia-nav dia-prev" data-dir="-1" aria-label="Dia anterior">◀</button>
+   <div class="dia-header dia-header-nav">
+  <button class="dia-nav dia-prev btn-nav-mes" data-dir="-1" aria-label="Dia anterior">‹</button>
 
   <div class="dia-date">${weekdayCA2(iso)} ${isoToDDMMYYYY(iso)}</div>
 
-  <button class="dia-nav dia-next" data-dir="1" aria-label="Dia següent">▶</button>
+  <button class="dia-nav dia-next btn-nav-mes" data-dir="1" aria-label="Dia següent">›</button>
 </div>
 
 ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
