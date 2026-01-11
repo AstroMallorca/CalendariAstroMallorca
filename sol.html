@@ -121,6 +121,42 @@
     color: var(--text);
     background: var(--card);
   }
+  /* Centrat general */
+.center{
+  text-align: center;
+}
+
+/* Data més gran */
+.meta.big{
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+/* Imatge centrada */
+.center-img{
+  display: block;
+  margin: 12px auto 16px;
+}
+
+/* KPI: valors alineats a la dreta */
+.kpi{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 8px;
+  column-gap: 12px;
+}
+
+.kpi b{
+  font-weight: 700;
+  text-align: left;
+}
+
+.kpi span{
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 </style>
 </head>
 
@@ -128,10 +164,10 @@
 <div class="wrap">
   <a href="#" id="back">← Tornar</a>
 
-  <h1>El Sol avui</h1>
-  <div class="meta" id="meta"></div>
+  <h1 class="center">El Sol avui</h1>
+<div class="meta center big" id="meta"></div>
 
-  <img class="hero" src="assets/icons/sun.png" alt="Sol">
+  <img class="hero center-img" src="assets/icons/sun.png" alt="Sol">
 
   <div class="card">
     <div class="kpi" id="kpi">Carregant…</div>
