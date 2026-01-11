@@ -615,4 +615,10 @@ body.nocturn .page-subtitle{ color: rgba(255,59,59,.75); }
 body.nocturn .back-btn{
   color: #ff2a2a;
 }
+.dia-row-icon img{
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
 
