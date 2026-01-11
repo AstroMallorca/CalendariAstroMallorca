@@ -38,16 +38,18 @@
       font-size: 18px;
     }
 
-    h1{
-      margin: 0 0 6px;
-      font-size: 34px;
-      letter-spacing: -0.02em;
-    }
+h1{
+  margin: 0 0 6px;
+  font-size: 34px;
+  letter-spacing: -0.02em;
+  text-align: center;          /* ✅ */
+}
 
-    .sub{
-      margin: 0 0 14px;
-      color: var(--muted);
-    }
+.sub{
+  margin: 0 0 14px;
+  color: var(--muted);
+  text-align: center;          /* ✅ */
+}
 
     .card{
       background: var(--card);
@@ -67,8 +69,8 @@
 <body>
 
   <a class="back" href="index.html">← Tornar</a>
-  <h1>Fotografia del mes</h1>
-  <p class="sub" id="subtitle">—</p>
+<h1 id="pageTitle">Fotografia del mes</h1>
+<p class="sub" id="subtitle">—</p>
 
   <div class="card">
     <img id="photo" alt="Foto del mes">
@@ -90,7 +92,86 @@
     // De moment: mostra el mes passat per URL, i una imatge per defecte
     const p = new URLSearchParams(location.search);
     const ym = p.get("ym") || "2026-01"; // format YYYY-MM
-    document.getElementById("subtitle").textContent = `Mes: ${ym}`;
+    const BASE_SHEETS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSWf6OL8LYzMsBPuxvI_h4s9-0__hru3hWK9D2ewyccoku9ndl2VhZ0GS8P9uEigShJEehsy2UktnY2/pub";
+const SHEET_FOTOS_MES = `${BASE_SHEETS}?output=csv&gid=0`;
+
+function detectDelimiter(text){
+  const firstLine = (text.split(/\r?\n/).find(l => l.trim()) || "");
+  const commas = (firstLine.match(/,/g) || []).length;
+  const semis  = (firstLine.match(/;/g) || []).length;
+  return semis > commas ? ";" : ",";
+}
+function parseCSV(text){
+  const delimiter = detectDelimiter(text);
+  const rows = [];
+  let row = [], cur = "", inQuotes = false;
+
+  for (let i=0;i<text.length;i++){
+    const c = text[i], next = text[i+1];
+    if (c === '"' && inQuotes && next === '"'){ cur += '"'; i++; continue; }
+    if (c === '"'){ inQuotes = !inQuotes; continue; }
+    if (c === delimiter && !inQuotes){ row.push(cur); cur=""; continue; }
+    if ((c === "\n" || c === "\r") && !inQuotes){
+      if (cur.length || row.length){ row.push(cur); rows.push(row); }
+      row=[]; cur="";
+      if (c === "\r" && next === "\n") i++;
+      continue;
+    }
+    cur += c;
+  }
+  if (cur.length || row.length){ row.push(cur); rows.push(row); }
+  return rows;
+}
+function normalizeHeader(h){
+  return (h||"").trim().toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[\s-]+/g,"_")
+    .replace(/[^a-z0-9_]/g,"");
+}
+function rowsToObjects(rows){
+  if (!rows.length) return [];
+  const header = rows[0].map(normalizeHeader);
+  return rows.slice(1)
+    .filter(r => r.some(x => (x||"").trim() !== ""))
+    .map(r => {
+      const obj = {};
+      header.forEach((h, idx) => obj[h] = (r[idx] ?? "").trim());
+      return obj;
+    });
+}
+
+async function loadFotosMes(){
+  const r = await fetch(SHEET_FOTOS_MES, { cache: "no-store" });
+  if (!r.ok) throw new Error(`No puc carregar fotos (${r.status})`);
+  const text = await r.text();
+  return rowsToObjects(parseCSV(text));
+}
+
+(async () => {
+  const p = new URLSearchParams(location.search);
+  const ym = p.get("ym") || "2026-01"; // YYYY-MM
+
+  // fallback d'imatge (si falla el sheet)
+  document.getElementById("photo").src = `assets/months/2026/${ym}.png`;
+
+  try{
+    const rows = await loadFotosMes();
+    // al teu app.js: o.any_mes és la clau (pot ser "2026-01" o "01-2026")
+    const f = rows.find(o => (o.any_mes || "").trim() === ym) ||
+              rows.find(o => (o.any_mes || "").trim() === `${ym.slice(5,7)}-${ym.slice(0,4)}`);
+
+    const titol = (f?.titol || "").trim();
+    document.getElementById("subtitle").textContent = titol || "—";
+
+    const img = (f?.imatge || "").trim();
+    if (img) document.getElementById("photo").src = img;
+
+  }catch(e){
+    console.warn(e);
+    // si falla, deixam el fallback i el subtítol en "—"
+  }
+})();
+
     document.getElementById("photo").src = `assets/months/2026/${ym}-01.png`.replace("-01.png", ".png"); // si tens 2026-01.png
     document.getElementById("photo").src = `assets/months/2026/${ym}.png`;
   </script>
