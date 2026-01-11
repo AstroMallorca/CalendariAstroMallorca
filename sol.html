@@ -250,12 +250,43 @@
     }
 
     const day0 = parseISODateLocal(dateStr);
+    // === Recorda d'on venim (1 sola vegada) per evitar "tornar" entre dies ===
+const RETURN_KEY = "astromallorca_sol_return_url";
+
+// Si ens han passat un return explícit per URL (?return=...), l'usam i el guardam
+const returnParam = p.get("return");
+if (returnParam) {
+  try { sessionStorage.setItem(RETURN_KEY, returnParam); } catch(e){}
+} else {
+  // Si el referrer NO és una altra sol.html, guardam el referrer com a pàgina de retorn
+  try{
+    const ref = document.referrer || "";
+    const sameOrigin = ref && ref.startsWith(location.origin);
+    const isSol = ref && ref.includes("/sol.html");
+    if (sameOrigin && !isSol) {
+      sessionStorage.setItem(RETURN_KEY, ref);
+    }
+  }catch(e){}
+}
+
 
     try {
       document.getElementById("back").addEventListener("click", (e) => {
-        e.preventDefault();
-        window.history.back();
-      });
+  e.preventDefault();
+
+  let ret = "";
+  try{ ret = sessionStorage.getItem(RETURN_KEY) || ""; }catch(err){}
+
+  // Si tenim una pàgina guardada, hi anam
+  if (ret) {
+    location.href = ret;
+    return;
+  }
+
+  // Fallback: calendari principal
+  location.href = "index.html";
+});
+
 function isoFromLocalDate(d){
   const y = d.getFullYear();
   const m = String(d.getMonth()+1).padStart(2,"0");
