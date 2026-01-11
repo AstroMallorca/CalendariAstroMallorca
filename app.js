@@ -772,6 +772,20 @@ const graella = document.getElementById("graellaDies");
 const modal = document.getElementById("modalDia");
 const contingutDia = document.getElementById("contingutDia");
 const botoNocturn = document.getElementById("toggleNocturn");
+// ✅ Aplica el mode nocturn guardat en carregar la pàgina principal
+try{
+  const saved = localStorage.getItem("nocturn") === "1";
+  document.body.classList.toggle("nocturn", saved);
+}catch(e){}
+try{
+  window.addEventListener("storage", (e) => {
+    if (e.key === "nocturn"){
+      const saved = localStorage.getItem("nocturn") === "1";
+      document.body.classList.toggle("nocturn", saved);
+    }
+  });
+}catch(e){}
+
 
 function setFotoMes(isoYM) {
   // El teu Sheet usa "YYYY-MM" (ex: 2026-08)
