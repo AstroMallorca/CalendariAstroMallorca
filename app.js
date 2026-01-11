@@ -1132,7 +1132,7 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
   <img src="assets/icons/sun.png" alt="Sol">
 </div>
     <div class="dia-row-text">
-      <div class="dia-row-title">Sortida i posta de Sol</div>
+      <div class="dia-row-title">El Sol avui</div>
       <div class="dia-row-sub">${solTxt}</div>
     </div>
   </div>
@@ -1142,7 +1142,7 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
   <img src="assets/icons/moon.png" alt="Lluna">
 </div>
     <div class="dia-row-text">
-      <div class="dia-row-title">Sortida i posta de Lluna</div>
+      <div class="dia-row-title">La Lluna avui</div>
       <div class="dia-row-sub">${llunaTxt}</div>
     </div>
   </div>
@@ -1152,14 +1152,14 @@ ${nomFestiu ? `<div class="dia-festiu">🎉 ${nomFestiu}</div>` : ""}
   <img src="assets/icons/saturn.png" alt="Planetes">
 </div>
     <div class="dia-row-text">
-      <div class="dia-row-title">Planetes visibles</div>
+      <div class="dia-row-title">Els Planetes avui</div>
       <div class="dia-row-sub">Obre per veure detalls</div>
     </div>
   </div>
 
   <div class="dia-row dia-link dia-btn" data-href="messiers.html?date=${iso}${obsQ}">
     <div class="dia-row-icon">
-  <img src="assets/icons/galaxy.png" alt="Messiers">
+  <img src="assets/icons/galaxy.png" alt="Cel profund">
 </div>
     <div class="dia-row-text">
       <div class="dia-row-title">Messiers visibles</div>
